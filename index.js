@@ -32,7 +32,6 @@ refKeyWord.orderByChild("status").equalTo("new").on("child_added", function(snap
         if(err) throw err;
         console.log(result);
           sqlResult = result;
-          updateFirebaseData(snapshot, sqlResult);
           sendSqlResultToFlowXO(snapshot, sqlResult);
       });
     }
@@ -47,4 +46,23 @@ function setConnection(argument) {
       password: constants.MYSQL_PASSWORD_PERSONS,
       database: "spider"
   });  
+}
+
+function sendSqlResultToFlowXO(snapshot, sqlResult){
+  var post = snapshot.val();
+  var respPath = post.responsePath;
+  request({
+    method: 'post',
+    url: requestUrl,
+    form: {
+      "sqlresult": sqlResult,
+      "path": respPath,
+    },
+    json: true,
+  }, (err, res, body) => {
+    if (err) { return console.log(err); }
+    console.log(body.url);
+    console.log(body.explanation);
+  });
+  console.log("Message sended");
 }
