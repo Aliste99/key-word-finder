@@ -33,7 +33,8 @@ refKeyWord.orderByChild("status").equalTo("new").on("child_added", function(snap
         if(err) throw err;
         console.log(result);
           sqlResult = result;
-          sendSqlResultToFlowXO(snapshot, sqlResult);
+          var messageResult = sqlResultToFlowXOmessage(sqlResult);
+          //sendSqlResultToFlowXO(snapshot, messageResult);
       });
     }
   });  
@@ -55,14 +56,28 @@ function setConnection(argument) {
   });  
 }
 
-function sendSqlResultToFlowXO(snapshot, sqlResult){
+function sqlResultToFlowXOmessage(sqlResult){
+  var message;
+  var b = 5;
+  var count = Object.keys(sqlResult).length;
+  var keys = Object.keys(sqlResult);
+  if (count < 5){
+    b = count;
+  }
+  for (var i = 0; i < b; i++ ){
+    console.log("vnfmkcl" + sqlResult[keys[i].id]);
+  }
+  return message;
+}
+
+function sendSqlResultToFlowXO(snapshot, result){
   var post = snapshot.val();
   var respPath = post.responsePath;
   request({
     method: 'post',
     url: requestUrl,
     form: {
-      "result": sqlResult,
+      "result": result,
       "path": respPath,
     },
     json: true,
