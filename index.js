@@ -10,16 +10,17 @@ var serviceAccount = require("./key-word-finder-firebase-adminsdk-7vd39-4ba6d8a5
 
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
-  databaseURL: "https://task-3d21a.firebaseio.com/"
+  databaseURL: "https://key-word-finder.firebaseio.com/"
 });
 
 
 var db = admin.database();
-var refKeyWord = db.ref("keywordfinder");
+var refKeyWord = db.ref("key-word");
 
 refKeyWord.orderByChild("status").equalTo("new").on("child_added", function(snapshot, prevChildKey) {
-    var post = snapshot.val();
-    var sqlResult;
+  var post = snapshot.val();
+  var sqlResult;
+  var sqlQuery = setSQLquery(post.message);
   console.log("vars completed");
   
   setConnection();
@@ -27,8 +28,8 @@ refKeyWord.orderByChild("status").equalTo("new").on("child_added", function(snap
   mySQL_persons.connect(function(err) {
     if(err) throw console.log(err);
     console.log("mySQL_persons connected!");
-    if(post.message){
-      mySQL_persons.query(post.message, function(err, result) {
+    if(sqlQuery){
+      mySQL_persons.query(sqlQuery, function(err, result) {
         if(err) throw err;
         console.log(result);
           sqlResult = result;
@@ -37,6 +38,12 @@ refKeyWord.orderByChild("status").equalTo("new").on("child_added", function(snap
     }
   });  
 });
+
+function setSQLquery(keyWord){
+    var sqlQuery;
+    sqlQuery = "SELECT * FROM Budget2017 LEFT JOIN persons ON Budget2017.person_Id = persons.id WHERE Budget2017.id LIKE '%" + keyWord + "%'  OR person_Id LIKE '%" + keyWord + "%' OR num LIKE '%" + keyWord + "%' OR period LIKE '%" + keyWord + "%'  OR payer LIKE '%" + keyWord + "%' OR details LIKE '%" + keyWord + "%' OR sumStr LIKE '%" + keyWord + "%'  OR sum LIKE '%" + keyWord + "%'";
+    return sqlQuery;
+}
 
 function setConnection(argument) {
   var mysql = require('mysql');
@@ -55,7 +62,7 @@ function sendSqlResultToFlowXO(snapshot, sqlResult){
     method: 'post',
     url: requestUrl,
     form: {
-      "sqlresult": sqlResult,
+      "result": sqlResult,
       "path": respPath,
     },
     json: true,
